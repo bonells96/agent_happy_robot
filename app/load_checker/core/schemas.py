@@ -4,9 +4,7 @@ from typing import Optional
 
 @dataclass
 class ShipmentRecord:  # You might also rename the class to match the file
-    """
-    Schema defining the structure of a shipment record.
-    """
+    """Schema defining the structure of a shipment record."""
     reference_number: str
     origin: str
     destination: str

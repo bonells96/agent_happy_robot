@@ -5,51 +5,39 @@ from typing import Optional, List
 import pandas as pd
 import logging
 
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 class PandasAccessor(BaseDataAccessor):
     """Pandas implementation of data accessor for smaller datasets."""
-    
+
     def __init__(self, df: pd.DataFrame):
-        self.df = df
+        self.df = df.applymap(lambda x: x.lower() if isinstance(x, str) else x)
 
     def get_by_reference(self, ref_number: str) -> Optional[ShipmentRecord]:
         try:
+            ref_number = ref_number.lower()
             result = self.df[self.df['reference_number'] == ref_number]
             return self._to_shipment_record(result.iloc[0]) if not result.empty else None
         except Exception as e:
             logger.error(f"Error retrieving shipment by reference: {e}")
             raise DataAccessError(f"Failed to retrieve shipment: {e}")
 
-    def get_by_lane(self, origin: str, destination: str) -> List[ShipmentRecord]:
+    def get_by_lane_and_equipment(self, origin: str, destination: str, equipment_type: Optional[str] = None) -> List[ShipmentRecord]:
         try:
-            mask = (self.df['origin'] == origin) & (self.df['destination'] == destination)
-            return [self._to_shipment_record(row) for _, row in self.df[mask].iterrows()]
-        except Exception as e:
-            logger.error(f"Error retrieving shipments by lane: {e}")
-            raise DataAccessError(f"Failed to retrieve shipments: {e}")
+            origin = origin.lower()
+            destination = destination.lower()
+            mask = self.df['origin'].str.contains(origin, case=False, na=False) & self.df['destination'].str.contains(destination, case=False, na=False)
+            filtered_df = self.df[mask]
 
-    def get_by_equipment(self, equipment_type: str) -> List[ShipmentRecord]:
-        try:
-            return [
-                self._to_shipment_record(row)
-                for _, row in self.df[self.df['equipment_type'].str.contains(equipment_type)].iterrows()
-            ]
-        except Exception as e:
-            logger.error(f"Error retrieving shipments by equipment: {e}")
-            raise DataAccessError(f"Failed to retrieve shipments: {e}")
+            if equipment_type:
+                equipment_type = equipment_type.lower()
+                filtered_df = filtered_df[filtered_df['equipment_type'].str.contains(equipment_type, case=False, na=False)]
 
-    def get_average_rate_by_lane(self, origin: str, destination: str) -> Optional[float]:
-        try:
-            mask = (self.df['origin'] == origin) & (self.df['destination'] == destination)
-            rates = self.df[mask]['rate']
-            return float(rates.mean()) if not rates.empty else None
+            return [self._to_shipment_record(row) for _, row in filtered_df.iterrows()]
         except Exception as e:
-            logger.error(f"Error calculating average rate: {e}")
-            raise DataAccessError(f"Failed to calculate average rate: {e}")
+            logger.error(f"Error retrieving shipments by lane and equipment: {e}")
+            raise DataAccessError(f"Failed to retrieve shipments: {e}")
 
     @staticmethod
     def _to_shipment_record(row: pd.Series) -> ShipmentRecord:
@@ -62,6 +50,3 @@ class PandasAccessor(BaseDataAccessor):
             rate=float(row['rate']),
             commodity=str(row['commodity'])
         )
-
-
-
