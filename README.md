@@ -18,10 +18,7 @@ This project implements a FastAPI-based REST API that provides shipment and carr
 ## Prerequisites
 
 - Python 3.9+
-- Docker (optional)
-- FastAPI
-- pandas
-- uvicorn
+- Docker 
 
 ## Installation
 
