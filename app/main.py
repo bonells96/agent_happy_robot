@@ -4,8 +4,8 @@ import pandas as pd
 from app.load_checker.data_access.pandas_accessor import PandasAccessor
 from typing import Optional
 from app.validate_carrier.carrier_verifier import CarrierVerifier  # Import the class
-from config import config  # Import the Config instance
-from models import ReferenceRequest, LaneAndEquipmentRequest, CarrierRequest
+from app.config import config  # Import the Config instance
+from app.models.models import ReferenceRequest, LaneAndEquipmentRequest, CarrierRequest
 from app.csv_loader import CSVLoader  # Import the CSV loader
 
 # Initialize FastAPI app
