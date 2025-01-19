@@ -9,6 +9,8 @@ pydantic = "*"
 httpx = "*"
 pandas = "*"
 uvicorn = "*"
+requests = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
